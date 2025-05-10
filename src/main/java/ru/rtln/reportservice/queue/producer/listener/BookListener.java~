@@ -1,0 +1,112 @@
+package ru.relex.libraryservice.queue.producer.listener;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionalEventListener;
+import ru.relex.libraryservice.queue.common.model.producer.BookDeclined;
+import ru.relex.libraryservice.queue.common.model.producer.BookForReviewPayload;
+import ru.relex.libraryservice.queue.common.model.producer.BookModerationCancelledPayload;
+import ru.relex.libraryservice.queue.common.model.producer.BookReadyForReceivePayload;
+import ru.relex.libraryservice.queue.common.model.producer.BookReservedPayload;
+import ru.relex.libraryservice.queue.common.model.producer.BookApproved;
+import ru.relex.libraryservice.queue.common.model.producer.BookRevokedPayload;
+import ru.relex.libraryservice.queue.common.model.producer.BookUnpublishedPayload;
+import ru.relex.libraryservice.queue.common.model.producer.event.CreateProducerEvent;
+import ru.relex.libraryservice.queue.producer.mapper.impl.BookDeclinedKafkaMessageStructImpl;
+import ru.relex.libraryservice.queue.producer.mapper.impl.BookForReviewKafkaMessageStructImpl;
+import ru.relex.libraryservice.queue.producer.mapper.impl.BookModerationCancelledKafkaMessageStructImpl;
+import ru.relex.libraryservice.queue.producer.mapper.impl.BookReadyForReceiveKafkaMessageStructImpl;
+import ru.relex.libraryservice.queue.producer.mapper.impl.BookReservedKafkaMessageStructImpl;
+import ru.relex.libraryservice.queue.producer.mapper.impl.BookApprovedKafkaMessageStructImpl;
+import ru.relex.libraryservice.queue.producer.mapper.impl.BookRevokedKafkaMessageStructImpl;
+import ru.relex.libraryservice.queue.producer.mapper.impl.BookUnpublishedKafkaMessageStructImpl;
+import ru.relex.libraryservice.queue.producer.service.PublisherService;
+
+import static ru.relex.libraryservice.queue.common.model.EventDeterminant.CREATE;
+
+@ConditionalOnProperty(name = "library-service.kafka.enabled", havingValue = "true")
+@RequiredArgsConstructor
+@Service
+public class BookListener {
+
+    private final PublisherService publisherService;
+    private final BookForReviewKafkaMessageStructImpl bookForReviewMessageStruct;
+    private final BookApprovedKafkaMessageStructImpl bookApprovedMessageStruct;
+    private final BookDeclinedKafkaMessageStructImpl bookDeclinedMessageStruct;
+    private final BookModerationCancelledKafkaMessageStructImpl bookModerationCancelledMessageStruct;
+    private final BookReadyForReceiveKafkaMessageStructImpl bookReadyForReceiveMessageStruct;
+    private final BookReservedKafkaMessageStructImpl bookReservedMessageStruct;
+    private final BookRevokedKafkaMessageStructImpl bookRevokedMessageStruct;
+    private final BookUnpublishedKafkaMessageStructImpl bookUnpublishMessageStruct;
+
+    @Value("${library-service.kafka.producer.topics.system-event-topic}")
+    private String systemEventTopic;
+
+    @Async
+    @EventListener
+    public void sendBookForReviewNotification(CreateProducerEvent<BookForReviewPayload> event) {
+        var payload = event.getPayload();
+        var message = bookForReviewMessageStruct.toMessage(payload, CREATE);
+        publisherService.sendMessage(systemEventTopic, message, bookForReviewMessageStruct.defineKey(payload));
+    }
+
+    @Async
+    @TransactionalEventListener
+    public void sendBookApprovedNotification(CreateProducerEvent<BookApproved> event) {
+        var payload = event.getPayload();
+        var message = bookApprovedMessageStruct.toMessage(payload, CREATE);
+        publisherService.sendMessage(systemEventTopic, message, bookApprovedMessageStruct.defineKey(payload));
+    }
+
+    @Async
+    @TransactionalEventListener
+    public void sendBookDeclinedNotification(CreateProducerEvent<BookDeclined> event) {
+        var payload = event.getPayload();
+        var message = bookDeclinedMessageStruct.toMessage(payload, CREATE);
+        publisherService.sendMessage(systemEventTopic, message, bookDeclinedMessageStruct.defineKey(payload));
+    }
+
+    @Async
+    @TransactionalEventListener
+    public void sendBookModerationCancelledNotification(CreateProducerEvent<BookModerationCancelledPayload> event) {
+        var payload = event.getPayload();
+        var message = bookModerationCancelledMessageStruct.toMessage(payload, CREATE);
+        publisherService.sendMessage(systemEventTopic, message, bookModerationCancelledMessageStruct.defineKey(payload));
+    }
+
+    @Async
+    @TransactionalEventListener
+    public void sendBookReadyForReceivedNotification(CreateProducerEvent<BookReadyForReceivePayload> event) {
+        var payload = event.getPayload();
+        var message = bookReadyForReceiveMessageStruct.toMessage(payload, CREATE);
+        publisherService.sendMessage(systemEventTopic, message, bookReadyForReceiveMessageStruct.defineKey(payload));
+    }
+
+    @Async
+    @TransactionalEventListener
+    public void sendBookReservedNotification(CreateProducerEvent<BookReservedPayload> event) {
+        var payload = event.getPayload();
+        var message = bookReservedMessageStruct.toMessage(payload, CREATE);
+        publisherService.sendMessage(systemEventTopic, message, bookReservedMessageStruct.defineKey(payload));
+    }
+
+    @Async
+    @TransactionalEventListener
+    public void sendBookRevokedNotification(CreateProducerEvent<BookRevokedPayload> event) {
+        var payload = event.getPayload();
+        var message = bookRevokedMessageStruct.toMessage(payload, CREATE);
+        publisherService.sendMessage(systemEventTopic, message, bookRevokedMessageStruct.defineKey(payload));
+    }
+
+    @Async
+    @TransactionalEventListener
+    public void sendBookUnpublishNotification(CreateProducerEvent<BookUnpublishedPayload> event) {
+        var payload = event.getPayload();
+        var message = bookUnpublishMessageStruct.toMessage(payload, CREATE);
+        publisherService.sendMessage(systemEventTopic, message, bookUnpublishMessageStruct.defineKey(payload));
+    }
+}

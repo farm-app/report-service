@@ -1,0 +1,55 @@
+server:
+  port: 9106
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761}/eureka/
+    enabled: true
+
+internal:
+  api-key-header-name: Api-key
+  service:
+    auth:
+      secure-key: ES8p3QFFyPEdpnAdYCdDMPGxm4epBMWdEDLbNB8eSBHjxQmNsk2jjz7ATK2wUCEf
+    working-norm:
+      url: http://localhost:9105/api/working-norm
+      secure-key: ES8p3QFFyPEdpnAdYCdDMPGxm4epBMWdEDLbNB8eSBHjxQmNsk2jjz7ATK2wUCEf
+
+
+report-service:
+  kafka:
+    enabled: true
+    producer:
+      topics:
+        system-event-topic: system-event-topic
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+owner:
+  email: test@test.com
+
+spring:
+  jackson:
+    default-property-inclusion: non_null
+    mapper:
+      accept-case-insensitive-enums: true
+  cloud:
+    config:
+      enabled: false
+  scheduled:
+    cron:
+      expression:
+        daily: "0 0 19 * * *"
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: ru.rtln.reportservice.queue.producer.serializer.KafkaJsonSerializer
+      bootstrap-servers: localhost:9092
+      client-id: report-service-default-client
+      properties:
+        enable.idempotence: false
