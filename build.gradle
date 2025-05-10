@@ -10,7 +10,7 @@ group = 'ru.rtln.reportservice'
 version = '0.0.1-SNAPSHOT'
 
 springBoot {
-	mainClass = 'ru.rtln.report.ReportServiceApplication'
+	mainClass = 'ru.rtln.reportservice.ReportServiceApplication'
 }
 
 java {
